@@ -1,17 +1,32 @@
-def call(boolean abortPipeline = false) {
-    timeout(time: 5, unit: 'MINUTES') {
-        withSonarQubeEnv('SonarQube') {
-            // Simulación del análisis estático de código
-            sh 'echo "Ejecución de las pruebas de calidad de código"'
-        }
+def call(Map params = [:]) {
+    boolean shouldAbort = params.get('shouldAbort', false)
+    boolean performQualityCheck = params.get('performQualityCheck', false)
+    def currentBranch = env.BRANCH_NAME
 
-        // Simulación del QualityGate
-        def qualityGateResult = waitForQualityGate()
+    withSonarQubeEnv('SonarQube Server') {
+        sh 'echo "Iniciando análisis de calidad de código..."'
+        
+        timeout(time: 5, unit: 'MINUTES') {
+            echo 'Esperando resultados del análisis...'
 
-        if (qualityGateResult.status != 'OK' && abortPipeline) {
-            error "Quality Gate fallido. Abortando el pipeline."
-        } else {
-            echo "Quality Gate status: ${qualityGateResult.status}. Continuando el pipeline."
+            // Simulación de una llamada a un análisis de calidad
+            def qualityResult = 'PASSED' 
+
+            if (performQualityCheck) {
+                echo "Estado del Quality Gate: ${qualityResult}"
+
+                if (qualityResult == 'FAILED') {
+                    if (shouldAbort) {
+                        error 'El Quality Gate ha fallado; el pipeline se aborta.'
+                    } else if (currentBranch == 'main' || currentBranch.startsWith('bugfix')) {
+                        error "El Quality Gate ha fallado en la rama '${currentBranch}', abortando el pipeline."
+                    } else {
+                        echo "El Quality Gate ha fallado, pero se continúa en la rama '${currentBranch}'."
+                    }
+                } else {
+                    echo "El Quality Gate ha sido aprobado, continuando el pipeline."
+                }
+            }
         }
     }
 }
