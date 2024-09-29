@@ -3,7 +3,7 @@ def call(Map params = [:]) {
     boolean performQualityCheck = params.get('performQualityCheck', false)
     def currentBranch = env.BRANCH_NAME
 
-    withSonarQubeEnv('SonarQube Server') {
+    withSonarQubeEnv('SonarQube Local') {
         sh 'echo "Iniciando análisis de calidad de código..."'
         
         timeout(time: 5, unit: 'MINUTES') {
