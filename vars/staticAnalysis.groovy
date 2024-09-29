@@ -10,13 +10,16 @@ def call(Map params = [:]) {
             echo 'Esperando resultados del análisis...'           
 
             if (qualityGateCheck) {
-                // Simulación de una llamada a un análisis de calidad
-                def qualityResult = 'PASSED' 
+                qualityResult = 'PASSED' // Asegúrate de que este valor sea el resultado real del análisis
                 echo "Estado del Quality Gate: ${qualityResult}"
-               
-                if (abortPipeline) {
+
+                if (qualityResult == null) {
+                    error "No se pudo obtener el resultado del análisis de calidad."
+                }
+
+                if (qualityResult == 'FAILED' && abortPipeline) {
                     error 'El análisis ha fallado y se ha abortado el pipeline.'
-                }else {
+                } else {
                     if (branchName == 'master' || branchName.startsWith('hotfix')) {
                         if (qualityResult == 'FAILED') {
                             error "El análisis de calidad ha fallado en la rama '${branchName}' y se ha abortado el pipeline."
