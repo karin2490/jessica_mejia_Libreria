@@ -14,11 +14,11 @@ def call(Map params = [:]) {
                 def qualityResult = 'PASSED' 
                 echo "Estado del Quality Gate: ${qualityResult}"
                
-                if (qualityResult == 'FAILED' && abortPipeline) {
+                if (abortPipeline) {
                     error 'El análisis ha fallado y se ha abortado el pipeline.'
                 }else {
                     if (branchName == 'master' || branchName.startsWith('hotfix')) {
-                        if (qualityGateStatus == 'FAILED') {
+                        if (qualityResult == 'FAILED') {
                             error "El análisis de calidad ha fallado en la rama '${branchName}' y se ha abortado el pipeline."
                         }
                     }
